@@ -25,9 +25,12 @@ LDFLAGS = -shared
 SRC = src/mod_ringback.c
 TARGET = mod_ringback.so
 
-.PHONY: all clean install
+.PHONY: all clean install test
 
 all: $(TARGET)
+
+test:
+	$(MAKE) -C test test
 
 $(TARGET): $(SRC)
 	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS) -lm

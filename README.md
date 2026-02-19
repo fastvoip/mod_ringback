@@ -18,7 +18,7 @@
 2. **能量检测**：区分静音与有音段
 3. **时序分析**：根据响/停时长模式区分忙音、回铃音、拥塞音
 
-## 编译安装
+## 编译
 
 ### 方式一：在 FreeSWITCH 源码树中编译
 
@@ -34,17 +34,61 @@ cp -r /path/to/mod_ringback/freeswitch/mod/applications/mod_ringback src/mod/app
 echo "applications/mod_ringback" >> build/modules.conf.in
 
 # 4. 编译
-make mod_ringback-install
+./bootstrap.sh && ./configure && make mod_ringback-install
 ```
 
-### 方式二：独立编译（需已安装 FreeSWITCH）
+### 方式二：独立编译（需 FreeSWITCH 头文件）
 
 ```bash
-# 使用已安装的 FreeSWITCH 头文件
-make
+# 指定 FreeSWITCH 源码路径（推荐）
+make FS_SRC=/path/to/freeswitch
 
-# 或指定 FreeSWITCH 源码路径
+# 或使用已安装的 FreeSWITCH
+make FS_PREFIX=/usr/local/freeswitch
+
+# 或使用 build.sh 脚本
 ./build.sh /path/to/freeswitch
+```
+
+### 方式三：Docker 环境编译
+
+```bash
+# 克隆 FreeSWITCH 获取头文件后编译
+git clone --depth 1 https://github.com/signalwire/freeswitch.git /tmp/freeswitch
+make FS_SRC=/tmp/freeswitch
+# 产物: mod_ringback.so
+```
+
+## 自动化测试
+
+### 1. 算法单元测试（无需 FreeSWITCH）
+
+测试时序模式匹配和能量检测逻辑：
+
+```bash
+make test
+# 或
+cd test && make test
+```
+
+### 2. CI 流水线
+
+项目包含 GitHub Actions 工作流，推送代码后自动执行：
+
+- **单元测试**：算法逻辑测试
+- **独立编译**：验证 mod_ringback.so 可成功编译
+- **源码树编译**：在 FreeSWITCH 树中编译（可选）
+
+### 3. 集成测试（手动）
+
+需要运行中的 FreeSWITCH 和可用网关：
+
+```bash
+# fs_cli 中发起测试呼叫
+originate {execute_on_media=start_ringback}sofia/gateway/your_gw/测试号码 &park
+
+# 挂断后检查通道变量
+uuid_getvar <uuid> ringback_result
 ```
 
 ### 安装

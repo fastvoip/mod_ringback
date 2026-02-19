@@ -15,13 +15,13 @@ if [ -n "$1" ]; then
     make FS_SRC="$FS_SRC" FS_PREFIX="${FS_PREFIX:-/usr/local/freeswitch}"
 else
     # 尝试常见路径
-    for PREFIX in /usr/local/freeswitch /usr/include/freeswitch; do
-        if [ -d "$PREFIX" ] || [ -d "$(dirname $PREFIX)" ]; then
-            if [ -f "/usr/local/freeswitch/include/switch.h" ] || [ -f "/usr/include/freeswitch/switch.h" ]; then
-                echo "使用已安装的 FreeSWITCH"
-                make
-                exit 0
-            fi
+    for PREFIX in /usr/local/freeswitch /usr; do
+        INC="$PREFIX/include/freeswitch/switch.h"
+        [ -f "$INC" ] || INC="$PREFIX/include/switch.h"
+        if [ -f "$INC" ]; then
+            echo "使用已安装的 FreeSWITCH: $PREFIX"
+            make FS_PREFIX="$PREFIX"
+            exit 0
         fi
     done
     echo "错误: 未找到 FreeSWITCH。请指定 FreeSWITCH 源码路径: ./build.sh /path/to/freeswitch"

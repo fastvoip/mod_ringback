@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master, cursor/*]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  unit-test:
+    name: 单元测试
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 编译并运行算法单元测试
+        run: |
+          cd test
+          gcc -o tone_detect_test tone_detect_test.c -lm
+          ./tone_detect_test
+
+  build-standalone:
+    name: 独立编译 mod_ringback.so
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 克隆 FreeSWITCH 获取头文件
+        run: git clone --depth 1 https://github.com/signalwire/freeswitch.git /tmp/freeswitch
+
+      - name: 编译模块
+        run: make FS_SRC=/tmp/freeswitch
+
+      - name: 验证产物
+        run: |
+          test -f mod_ringback.so && echo "mod_ringback.so 编译成功" || exit 1
+
+  build-freeswitch-tree:
+    name: FreeSWITCH 源码树编译
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 克隆 FreeSWITCH
+        run: |
+          git clone --depth 1 https://github.com/signalwire/freeswitch.git /tmp/freeswitch
+          cp -r freeswitch/mod/applications/mod_ringback /tmp/freeswitch/src/mod/applications/
+          echo "applications/mod_ringback" >> /tmp/freeswitch/build/modules.conf.in
+
+      - name: 编译 FreeSWITCH 及 mod_ringback
+        run: |
+          cd /tmp/freeswitch
+          ./bootstrap.sh
+          ./configure --prefix=/usr/local/freeswitch
+          make mod_ringback
+        continue-on-error: true
