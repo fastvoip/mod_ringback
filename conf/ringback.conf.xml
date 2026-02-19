@@ -1,0 +1,31 @@
+<!--
+  mod_ringback 配置文件
+  复制到 FreeSWITCH 的 conf/autoload_configs/ 目录
+  参考: https://www.ddrj.com/asr/mod_da2.html
+-->
+<configuration name="ringback.conf" description="Ringback Tone Detection">
+  <settings>
+
+    <!-- 检测到什么信号时停止检测: busy, ringback, congestion, all -->
+    <param name="stoptone" value="busy"/>
+
+    <!-- 识别到 stoptone 包含的信号时自动挂断，默认 true -->
+    <param name="autohangup" value="true"/>
+
+    <!-- 最大检测时间，单位秒 -->
+    <param name="maxdetecttime" value="60"/>
+
+    <!-- 忙音时序规则: 响(ms)-响最大值|停(ms)-停最大值，默认 300-400|250-400 -->
+    <param name="tone_busy_rule" value="300-400|250-400"/>
+
+    <!-- 回铃音时序规则: 默认 900-1100|3000-4500 -->
+    <param name="tone_ringback_rule" value="900-1100|3000-4500"/>
+
+    <!-- 拥塞音时序规则: 默认 600-750|500-750 -->
+    <param name="tone_congestion_rule" value="600-750|500-750"/>
+
+    <!-- 把检测结果写入通道变量 -->
+    <param name="result_variable" value="ringback_result"/>
+
+  </settings>
+</configuration>
